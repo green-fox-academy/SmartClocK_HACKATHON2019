@@ -16,15 +16,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ScrollView;
-import android.widget.TextView;
+import android.widget.*;
 
 import me.aflak.bluetooth.Bluetooth;
 
 public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCallback {
-    String display;
+    private String display;
     private String name;
     private Bluetooth b;
     private EditText message;
@@ -32,6 +29,7 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
     private TextView text;
     private TextView temp;
     private ScrollView scrollView;
+    private ImageView picture;
     private boolean registered=false;
     Button btn_clock, btn_on, btn_temp;
 
@@ -40,16 +38,16 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         btn_on = (Button) findViewById(R.id.button1);
         btn_clock = (Button) findViewById(R.id.button2);
         btn_temp = (Button) findViewById(R.id.button3);
         text = (TextView)findViewById(R.id.text);
         message = (EditText)findViewById(R.id.message);
         send = (Button)findViewById(R.id.send);
-        scrollView = (ScrollView) findViewById(R.id.scrollView);
+        scrollView = (ScrollView)findViewById(R.id.scrollView);
+        picture = (ImageView)findViewById(R.id.picture);
 
+        picture.setVisibility(View.INVISIBLE);
 
         text.setMovementMethod(new ScrollingMovementMethod());
         send.setEnabled(false);
@@ -182,10 +180,9 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
 
     @Override
     public void onMessage(String message) {
-        temp = (TextView) findViewById(R.id.temp);
-        display = message;
-        temp.setText(message);
-
+        if(message == "abc"){
+            Display("test");
+        }
     }
 
     @Override
