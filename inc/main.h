@@ -11,6 +11,10 @@
 #include "gpio.h"
 #include "lcd_driver.h"
 #include "temperature_sensor.h"
+#include "rtc.h"
+#include "light_sensor.h"
+#include "humidity_sensor.h"
+
 
 
 
