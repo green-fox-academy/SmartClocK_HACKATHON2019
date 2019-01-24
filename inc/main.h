@@ -9,6 +9,8 @@
 #include "usart.h"
 #include "timer.h"
 #include "gpio.h"
+#include "lcd_driver.h"
+
 
 
 UART_HandleTypeDef huart6;
