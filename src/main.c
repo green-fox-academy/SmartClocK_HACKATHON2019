@@ -53,6 +53,11 @@ int main(void) {
 
 	/* Add your application code here */
 
+	MX_GPIO_init();
+	MX_Usart_init();
+	MX_Usart6_init();
+	MX_I2C_init();
+	i2c_detect();
 
 
 
