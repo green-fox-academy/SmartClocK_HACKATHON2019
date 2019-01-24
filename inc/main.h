@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "gpio.h"
 #include "lcd_driver.h"
+#include "temperature_sensor.h"
 
 
 
