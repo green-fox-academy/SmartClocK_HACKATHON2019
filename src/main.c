@@ -57,6 +57,7 @@ int main(void) {
 	MX_Usart_init();
 	MX_Usart6_init();
 	MX_I2C_init();
+	MX_TIMER_init();
 	i2c_detect();
 
 

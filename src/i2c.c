@@ -1,7 +1,7 @@
 #include "i2c.h"
 
 
-void I2C_init(void) {
+void MX_I2C_init(void) {
 
 	i2c_pin_config.Pin = GPIO_PIN_9 | GPIO_PIN_8;
 	i2c_pin_config.Mode = GPIO_MODE_AF_OD;
