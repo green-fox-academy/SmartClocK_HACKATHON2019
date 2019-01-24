@@ -21,6 +21,8 @@
 UART_HandleTypeDef huart6;
 UART_HandleTypeDef huart1;
 GPIO_InitTypeDef bluetooth_config;
+GPIO_InitTypeDef lcd_strip;
+GPIO_InitTypeDef INPUT_FREQ;
 I2C_HandleTypeDef hi2c1;
 GPIO_InitTypeDef i2c_pin_config;
 TIM_HandleTypeDef HH10D_PWM;

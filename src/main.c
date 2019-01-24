@@ -11,7 +11,13 @@
 #endif /* __GNUC__ */
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-
+hh10d_data_t rh_sensor;
+times_t rtc_real;
+time_setting_t rtc;
+extern uint8_t temp;
+uint8_t text;
+char buffer[5];
+uint8_t rx_index = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -53,23 +59,122 @@ int main(void) {
 
 	/* Add your application code here */
 
+	time_setting_t rtc = { .seconds = 00, .minutes = 40, .hours = 18, .weekday =
+				4, .date = 24, .month = 1, .year = 19 };
+
 	MX_GPIO_init();
 	MX_Usart_init();
 	MX_Usart6_init();
 	MX_I2C_init();
 	MX_TIMER_init();
 	i2c_detect();
-
-
+	lcd_init();
+	tempsens_on();
+	rtc_init();
+	light_sensor_init();
+	rtc_set(&rtc);
+	HAL_TIM_Base_Start(&HH10D_PWM);
+	light_sensor_init();
+	get_constant_datas(&rh_sensor);
+	HAL_UART_Receive_IT(&huart6, &text, 1);
 
 	while (1) {
 
 	}
-	/**
-	 * @brief  Retargets the C library printf function to the USART.
-	 * @param  None
-	 * @retval None
-	 */
+
+}
+
+void TIM3_IRQHandler() {
+
+	HAL_TIM_IRQHandler(&TEMP_AND_RH);
+}
+
+void TIM4_IRQHandler() {
+
+	HAL_TIM_IRQHandler(&DATE_AND_TIME);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+	if (htim->Instance == TIM3) {
+
+		HAL_TIM_Base_Stop_IT(&DATE_AND_TIME);
+		char temp_data[2];
+		char rh_data[2];
+		clear_display();
+		get_freq(&rh_sensor);
+		get_humidity(&rh_sensor);
+		sprintf(rh_data, "%d", rh_sensor.RH);
+		send_string(rh_data);
+		send_string("% RH");
+		new_line();
+		get_temp();
+		sprintf(temp_data, "%d", temp);
+		send_string(temp_data);
+		send_string(" CELSIUS");
+		new_line();
+
+
+		if (get_lux_value() == DAY) {
+
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
+		} else {
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
+		}
+
+	}
+	if (htim->Instance == TIM4) {
+
+		HAL_TIM_Base_Stop_IT(&TEMP_AND_RH);
+		char time[9];
+		char date[11];
+		clear_display();
+		rtc_get(&rtc_real);
+		create_time_string(&rtc_real, time);
+		send_string(time);
+		new_line();
+		create_date_string(&rtc_real, date);
+		send_string(date);
+
+		if (get_lux_value() == DAY) {
+
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
+		} else {
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
+		}
+
+	}
+}
+
+void USART6_IRQHandler() {
+	HAL_UART_IRQHandler(&huart6);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	if (huart->Instance == USART6) {
+		if (rx_index == 0) {
+			memset(buffer, '\0', 1);
+		}
+		if (text != '\n') {
+			buffer[rx_index++] = text;
+		} else {
+			if (strncmp(buffer, "onnnn", 5) == 0) {
+				clear_display();
+				send_string("  C-FIGHTERS");
+				new_line();
+				send_string("HACKATHON 2019");
+			} else if (strncmp(buffer, "clock", 5) == 0) {
+				HAL_TIM_Base_Start_IT(&DATE_AND_TIME);
+			} else if (strncmp(buffer, "temps", 5) == 0) {
+				HAL_TIM_Base_Start_IT(&TEMP_AND_RH);
+
+			}
+
+			rx_index = 0;
+			HAL_UART_Transmit(&huart6, buffer, sizeof(buffer), 100);
+		}
+		HAL_UART_Receive_IT(&huart6, &text, 1);
+	}
 }
 
 /**
