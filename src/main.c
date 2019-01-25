@@ -1,20 +1,328 @@
-/**
-  ******************************************************************************
-  * @file    main.c
-  * @author  Ac6
-  * @version V1.0
-  * @date    01-December-2013
-  * @brief   Default main function.
-  ******************************************************************************
-*/
+#include "main.h"
 
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+#ifdef __GNUC__
+/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+ set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+hh10d_data_t rh_sensor;
+times_t current_time;
+time_setting_t rtc;
+extern uint8_t temperature_value;
+uint8_t text;
+char bluetooth_buffer[5];
+uint8_t rx_index = 0;
+/* Private function prototypes -----------------------------------------------*/
+static void SystemClock_Config(void);
+static void Error_Handler(void);
+static void MPU_Config(void);
+static void CPU_CACHE_Enable(void);
 
-#include "stm32f7xx.h"
-#include "stm32746g_discovery.h"
-			
+/* Private functions ---------------------------------------------------------*/
 
-int main(void)
-{
+/*
+ * @brief  Main program
+ * @param  None
+ * @retval None
+ */
+int main(void) {
+	/* This project template calls firstly two functions in order to configure MPU feature
+	 and to enable the CPU Cache, respectively MPU_Config() and CPU_CACHE_Enable().
+	 These functions are provided as template implementation that User may integrate
+	 in his application, to enhance the performance in case of use of AXI interface
+	 with several masters. */
 
-	for(;;);
+	/* Configure the MPU attributes as Write Through */
+	MPU_Config();
+
+	/* Enable the CPU Cache */
+	CPU_CACHE_Enable();
+
+	/* STM32F7xx HAL library initialization:
+	 - Configure the Flash ART accelerator on ITCM interface
+	 - Configure the Systick to generate an interrupt each 1 msec
+	 - Set NVIC Group Priority to 4
+	 - Low Level Initialization
+	 */
+	HAL_Init();
+
+	/* Configure the System clock to have a frequency of 216 MHz */
+	SystemClock_Config();
+
+	/* Add your application code here */
+
+	time_setting_t rtc = { .seconds = 00, .minutes = 40, .hours = 18, .weekday =
+			4, .date = 24, .month = 1, .year = 19 };
+
+	MX_GPIO_init();
+	MX_Usart_init();
+	MX_Usart6_init();
+	MX_I2C_init();
+	MX_TIMER_init();
+	i2c_detect();
+	lcd_init();
+	tempsens_on();
+	rtc_init();
+	light_sensor_init();
+	set_time(&rtc);
+	HAL_TIM_Base_Start(&HH10D_PWM);
+	light_sensor_init();
+	get_constant_datas(&rh_sensor);
+	HAL_UART_Receive_IT(&huart6, &text, 1);
+
+	while (1) {
+
+	}
 }
+
+PUTCHAR_PROTOTYPE {
+	/* Place your implementation of fputc here */
+	/* e.g. write a character to the EVAL_COM1 and Loop until the end of transmission */
+	HAL_UART_Transmit(&huart6, (uint8_t *) &ch, 1, 0xFFFF);
+
+	return ch;
+}
+
+void TIM3_IRQHandler() {
+
+	HAL_TIM_IRQHandler(&TEMP_AND_RH);
+}
+
+void TIM4_IRQHandler() {
+
+	HAL_TIM_IRQHandler(&DATE_AND_TIME);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+	if (htim->Instance == TIM3) {
+
+		HAL_TIM_Base_Stop_IT(&DATE_AND_TIME);
+		char temp_data[2];
+		char rh_data[2];
+		clear_display();
+		get_freq(&rh_sensor);
+		get_humidity(&rh_sensor);
+		send_string("HUMIDITY ");
+		sprintf(rh_data, "%d", rh_sensor.RH);
+		send_string(rh_data);
+		send_string("% RH");
+		new_line();
+		get_temperature();
+		send_string("TEMPERATURE ");
+		sprintf(temp_data, "%d", temperature_value);
+		send_string(temp_data);
+		send_string(" C");
+		new_line();
+		get_lux_value();
+
+		if (get_lux_value() == OPEN) {
+
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
+		} else {
+
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
+		}
+
+	}
+	if (htim->Instance == TIM4) {
+
+		HAL_TIM_Base_Stop_IT(&TEMP_AND_RH);
+		char time[9];
+		char date[11];
+		clear_display();
+		get_time(&current_time);
+		create_time_string(&current_time, time);
+		send_string(time);
+		new_line();
+		create_date_string(&current_time, date);
+		send_string(date);
+		get_lux_value();
+
+		if (get_lux_value() == OPEN) {
+
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
+		} else {
+
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
+		}
+
+	}
+}
+
+void USART6_IRQHandler() {
+
+	HAL_UART_IRQHandler(&huart6);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+
+	if (huart->Instance == USART6) {
+		if (rx_index == 0) {
+
+			memset(bluetooth_buffer, '\0', 1);
+		}
+		if (text != '\n') {
+
+			bluetooth_buffer[rx_index++] = text;
+		} else {
+
+			if (strncmp(bluetooth_buffer, "onnnn", 5) == 0) {
+
+				clear_display();
+				send_string("  C-FIGHTERS");
+				new_line();
+				send_string("HACKATHON 2019");
+
+			} else if (strncmp(bluetooth_buffer, "clock", 5) == 0) {
+				HAL_TIM_Base_Start_IT(&DATE_AND_TIME);
+			} else if (strncmp(bluetooth_buffer, "temps", 5) == 0) {
+				HAL_TIM_Base_Start_IT(&TEMP_AND_RH);
+
+			}
+			rx_index = 0;
+			HAL_UART_Transmit(&huart6, bluetooth_buffer,
+					sizeof(bluetooth_buffer), 100);
+		}
+		HAL_UART_Receive_IT(&huart6, &text, 1);
+	}
+}
+
+/**
+ * @brief  System Clock Configuration
+ *         The system Clock is configured as follow :
+ *            System Clock source            = PLL (HSE)
+ *            SYSCLK(Hz)                     = 216000000
+ *            HCLK(Hz)                       = 216000000
+ *            AHB Prescaler                  = 1
+ *            APB1 Prescaler                 = 4
+ *            APB2 Prescaler                 = 2
+ *            HSE Frequency(Hz)              = 25000000
+ *            PLL_M                          = 25
+ *            PLL_N                          = 432
+ *            PLL_P                          = 2
+ *            PLL_Q                          = 9
+ *            VDD(V)                         = 3.3
+ *            Main regulator output voltage  = Scale1 mode
+ *            Flash Latency(WS)              = 7
+ * @param  None
+ * @retval None
+ */
+static void SystemClock_Config(void) {
+	RCC_ClkInitTypeDef RCC_ClkInitStruct;
+	RCC_OscInitTypeDef RCC_OscInitStruct;
+
+	/* Enable HSE Oscillator and activate PLL with HSE as source */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	RCC_OscInitStruct.PLL.PLLM = 25;
+	RCC_OscInitStruct.PLL.PLLN = 432;
+	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	RCC_OscInitStruct.PLL.PLLQ = 9;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
+
+	/* activate the OverDrive to reach the 216 Mhz Frequency */
+	if (HAL_PWREx_EnableOverDrive() != HAL_OK) {
+		Error_Handler();
+	}
+
+	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+	 clocks dividers */
+	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK
+			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+/**
+ * @brief  This function is executed in case of error occurrence.
+ * @param  None
+ * @retval None
+ */
+static void Error_Handler(void) {
+	/* User may add here some code to deal with this error */
+	while (1) {
+	}
+}
+
+/**
+ * @brief  Configure the MPU attributes as Write Through for SRAM1/2.
+ * @note   The Base Address is 0x20010000 since this memory interface is the AXI.
+ *         The Region Size is 256KB, it is related to SRAM1 and SRAM2  memory size.
+ * @param  None
+ * @retval None
+ */
+static void MPU_Config(void) {
+	MPU_Region_InitTypeDef MPU_InitStruct;
+
+	/* Disable the MPU */
+	HAL_MPU_Disable();
+
+	/* Configure the MPU attributes as WT for SRAM */
+	MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress = 0x20010000;
+	MPU_InitStruct.Size = MPU_REGION_SIZE_256KB;
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+	MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+	MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	/* Enable the MPU */
+	HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
+
+/**
+ * @brief  CPU L1-Cache enable.
+ * @param  None
+ * @retval None
+ */
+static void CPU_CACHE_Enable(void) {
+	/* Enable I-Cache */
+	SCB_EnableICache();
+
+	/* Enable D-Cache */
+	SCB_EnableDCache();
+}
+
+#ifdef  USE_FULL_ASSERT
+
+/**
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+	/* User can add his own implementation to report the file name and line number,
+	 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+
+	/* Infinite loop */
+	while (1)
+	{
+	}
+}
+#endif
