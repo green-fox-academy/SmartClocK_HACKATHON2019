@@ -40,6 +40,7 @@
 
         <TextView
                 android:id="@+id/text"
+                android:textSize="40sp"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="bottom" android:visibility="visible"/>
@@ -53,21 +54,29 @@
             android:layout_alignStart="@+id/message" android:layout_alignBottom="@+id/message"/>
     <Button
             android:text="temp"
-            android:layout_width="225dp"
-            android:layout_height="wrap_content" android:id="@+id/button3"
+            android:layout_width="224dp"
+            android:layout_height="71dp" android:id="@+id/button3"
             android:layout_alignParentTop="true"
             android:layout_marginTop="131dp" android:backgroundTint="@android:color/holo_blue_light"
             android:layout_centerHorizontal="true"/>
+    <ImageView
+            android:layout_width="257dp"
+            android:layout_height="206dp" app:srcCompat="@drawable/logo"
+            android:layout_centerHorizontal="true" android:id="@+id/picture"
+            android:layout_above="@+id/button1"/>
+    <TextView
+            android:text="C-FIGHTERS"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:id="@+id/textView"
+            android:textSize="30sp"
+            android:layout_centerHorizontal="true" android:layout_alignTop="@+id/scrollView"/>
     <Button
             android:text="Clock"
             android:layout_width="224dp"
-            android:layout_height="wrap_content" android:id="@+id/button2"
-            android:layout_alignParentTop="true" android:layout_marginTop="49dp"
-            android:layout_centerHorizontal="true" android:backgroundTint="@android:color/holo_red_light"/>
-    <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" app:srcCompat="@drawable/logo"
-            android:layout_centerHorizontal="true" android:id="@+id/picture" android:layout_alignTop="@+id/button3"
-    />
+            android:layout_height="72dp" android:id="@+id/button2"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:layout_centerHorizontal="true" android:layout_above="@+id/button3"
+            android:layout_marginBottom="-131dp"/>
 
 </RelativeLayout>

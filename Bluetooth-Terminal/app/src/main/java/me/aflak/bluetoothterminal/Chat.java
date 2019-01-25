@@ -17,21 +17,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
-
 import me.aflak.bluetooth.Bluetooth;
 
 public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCallback {
-    private String display;
     private String name;
     private Bluetooth b;
     private EditText message;
     private Button send;
     private TextView text;
-    private TextView temp;
     private ScrollView scrollView;
-    private ImageView picture;
     private boolean registered=false;
-    Button btn_clock, btn_on, btn_temp;
+    private Button btn_clock, btn_on, btn_temp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +41,6 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
         message = (EditText)findViewById(R.id.message);
         send = (Button)findViewById(R.id.send);
         scrollView = (ScrollView)findViewById(R.id.scrollView);
-        picture = (ImageView)findViewById(R.id.picture);
-
-        picture.setVisibility(View.INVISIBLE);
 
         text.setMovementMethod(new ScrollingMovementMethod());
         send.setEnabled(false);
@@ -59,7 +52,6 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
         b.enableBluetooth();
 
         b.setCommunicationCallback(this);
-
 
         int pos = getIntent().getExtras().getInt("pos");
         name = b.getPairedDevices().get(pos).getName();
@@ -100,7 +92,6 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
         registerReceiver(mReceiver, filter);
         registered=true;
 
-
     }
 
     @Override
@@ -131,17 +122,6 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
                 finish();
                 return true;
 
-            case R.id.rate:
-                Uri uri = Uri.parse("market://details?id=" + this.getPackageName());
-                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-                goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                try {
-                    startActivity(goToMarket);
-                } catch (ActivityNotFoundException e) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("http://play.google.com/store/apps/details?id=" + this.getPackageName())));
-                }
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -180,9 +160,6 @@ public class Chat extends AppCompatActivity implements Bluetooth.CommunicationCa
 
     @Override
     public void onMessage(String message) {
-        if(message == "abc"){
-            Display("test");
-        }
     }
 
     @Override

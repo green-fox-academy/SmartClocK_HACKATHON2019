@@ -39,11 +39,11 @@
     </me.aflak.pulltorefresh.PullToRefresh>
 
     <Button
-        android:id="@+id/not_in_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Device not found!"
-        android:layout_below="@+id/pull_to_refresh"
-        android:layout_alignParentStart="true" />
+            android:id="@+id/not_in_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scan"
+            android:layout_below="@+id/pull_to_refresh"
+            android:layout_alignParentStart="true"/>
 
 </RelativeLayout>
