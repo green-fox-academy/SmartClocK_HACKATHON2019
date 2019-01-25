@@ -18,11 +18,11 @@ is_Dark get_lux_value(void) {
 			2, 160);
 
 	switch (lux_value) {
-	case 0 ... 1200:
-		condition = NIGHT;
+	case 700 ... 1800:
+		condition = CLOSED;
 		break;
 	default:
-		condition = DAY;
+		condition = OPEN;
 	}
 	return condition;
 }

@@ -24,7 +24,7 @@ void MX_TIMER_init(void) {
 	HAL_TIM_Base_Init(&HH10D_PWM);
 
 	TEMP_AND_RH.Instance = TIM3;
-	TEMP_AND_RH.Init.Period = 3333;
+	TEMP_AND_RH.Init.Period = 13332;
 	TEMP_AND_RH.Init.Prescaler = 32400 - 1;
 	TEMP_AND_RH.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	TEMP_AND_RH.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -42,21 +42,5 @@ void MX_TIMER_init(void) {
 	HAL_NVIC_SetPriority(TIM4_IRQn, 0x0F, 0x00);
 	HAL_NVIC_EnableIRQ(TIM4_IRQn);
 	HAL_TIM_Base_Init(&DATE_AND_TIME);
-
-	SERVO_PWM.Instance = TIM1;
-	SERVO_PWM.Init.Period = 100;
-	SERVO_PWM.Init.Prescaler = 1080;
-	SERVO_PWM.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	SERVO_PWM.Init.CounterMode = TIM_COUNTERMODE_UP;
-
-	HAL_TIM_Base_Init(&SERVO_PWM);
-	HAL_TIM_Base_Start(&SERVO_PWM);
-
-	SERVO_CONFIG.OCMode = TIM_OCMODE_PWM1;
-	SERVO_CONFIG.Pulse = 0;
-
-	HAL_TIM_PWM_ConfigChannel(&SERVO_PWM, &SERVO_CONFIG, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Init(&SERVO_PWM);
-	HAL_TIM_PWM_Start(&SERVO_PWM, TIM_CHANNEL_1);
 
 }

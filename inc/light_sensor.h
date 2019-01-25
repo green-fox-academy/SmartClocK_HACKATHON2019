@@ -8,8 +8,8 @@
 #define LIGHT_SENSOR_ADDRESS 0x46
 
 typedef enum Darkness {
-	DAY,
-	NIGHT
+	CLOSED,
+	OPEN
 }is_Dark;
 
 void light_sensor_init(void);

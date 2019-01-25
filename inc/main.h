@@ -15,22 +15,14 @@
 #include "light_sensor.h"
 #include "humidity_sensor.h"
 
-typedef enum display_clear {
-	CLEAR,
-	STOP
-}refresh;
-
 UART_HandleTypeDef huart6;
 UART_HandleTypeDef huart1;
 GPIO_InitTypeDef bluetooth_config;
 GPIO_InitTypeDef lcd_strip;
 GPIO_InitTypeDef INPUT_FREQ;
-GPIO_InitTypeDef SERVO_PIN;
 I2C_HandleTypeDef hi2c1;
 GPIO_InitTypeDef i2c_pin_config;
 TIM_HandleTypeDef HH10D_PWM;
-TIM_HandleTypeDef SERVO_PWM;
-TIM_OC_InitTypeDef SERVO_CONFIG;
 TIM_ClockConfigTypeDef sClockSourceConfig;
 TIM_MasterConfigTypeDef sMasterConfig;
 TIM_HandleTypeDef TEMP_AND_RH;

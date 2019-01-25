@@ -18,9 +18,6 @@ extern uint8_t temperature_value;
 uint8_t text;
 char bluetooth_buffer[5];
 uint8_t rx_index = 0;
-refresh display = CLEAR;
-int saved_temperature = 0;
-
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void Error_Handler(void);
@@ -109,10 +106,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		HAL_TIM_Base_Stop_IT(&DATE_AND_TIME);
 		char temp_data[2];
 		char rh_data[2];
-		if (display == CLEAR) {
-			clear_display();
-			display = STOP;
-		}
+		clear_display();
 		get_freq(&rh_sensor);
 		get_humidity(&rh_sensor);
 		send_string("HUMIDITY ");
@@ -121,18 +115,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		send_string("% RH");
 		new_line();
 		get_temperature();
-		if (saved_temperature != temperature_value) {
-			display = CLEAR;
-		}
 		send_string("TEMPERATURE ");
 		sprintf(temp_data, "%d", temperature_value);
 		send_string(temp_data);
 		send_string(" C");
 		new_line();
 		get_lux_value();
-		saved_temperature = temperature_value;
 
-		if (get_lux_value() == DAY) {
+		if (get_lux_value() == OPEN) {
 
 			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
 		} else {
@@ -155,7 +145,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		send_string(date);
 		get_lux_value();
 
-		if (get_lux_value() == DAY) {
+		if (get_lux_value() == OPEN) {
 
 			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
 		} else {
