@@ -2,31 +2,27 @@
 
 void light_sensor_init(void) {
 
-	uint8_t settings = 0x10;
+	uint8_t light_sensor_settings = 0x10;
 
-	HAL_I2C_Master_Transmit(&hi2c1, LIGHT_SENSOR_ADDRESS, &settings, 1, 100);
+	HAL_I2C_Master_Transmit(&hi2c1, LIGHT_SENSOR_ADDRESS,
+			&light_sensor_settings, 1, 100);
 
-	HAL_Delay(30);
 }
 
 is_Dark get_lux_value(void) {
 
 	is_Dark condition;
+	static uint16_t lux_value;
 
-	static uint16_t value;
+	HAL_I2C_Master_Receive(&hi2c1, LIGHT_SENSOR_ADDRESS, (uint8_t*) &lux_value,
+			2, 160);
 
-	HAL_I2C_Master_Receive(&hi2c1, LIGHT_SENSOR_ADDRESS, (uint8_t*) &value, 2,
-			160);
-
-
-
-	switch (value) {
-	case 0 ... 500:
+	switch (lux_value) {
+	case 0 ... 1200:
 		condition = NIGHT;
 		break;
 	default:
 		condition = DAY;
 	}
-
 	return condition;
 }

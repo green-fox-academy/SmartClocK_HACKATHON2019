@@ -14,7 +14,7 @@
 
 void tempsens_on(void);
 void tempsens_off(void);
-void get_temp(void);
+void get_temperature(void);
 uint8_t get_temp_id(void);
 
 

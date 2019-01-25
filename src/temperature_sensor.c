@@ -1,7 +1,7 @@
 #include "temperature_sensor.h"
 
 
-uint8_t temp = 0;
+uint8_t temperature_value = 0;
 
 void tempsens_on(void) {
 
@@ -17,10 +17,10 @@ void tempsens_off(void) {
 
 }
 
-void get_temp(void) {
+void get_temperature(void) {
 
 	HAL_I2C_Mem_Read(&hi2c1, TEMPSENS_READING, TEMP_REGISTER,
-			I2C_ADDRESSINGMODE_7BIT, &temp, 2, 300);
+			I2C_ADDRESSINGMODE_7BIT, &temperature_value, 2, 300);
 
 }
 

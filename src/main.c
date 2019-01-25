@@ -12,15 +12,16 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 hh10d_data_t rh_sensor;
-times_t rtc_real;
+times_t current_time;
 time_setting_t rtc;
-extern uint8_t temp;
+extern uint8_t temperature_value;
 uint8_t text;
-char buffer[5];
+char bluetooth_buffer[5];
 uint8_t rx_index = 0;
+refresh display = CLEAR;
+int saved_temperature = 0;
 
 /* Private function prototypes -----------------------------------------------*/
-
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 static void MPU_Config(void);
@@ -60,7 +61,7 @@ int main(void) {
 	/* Add your application code here */
 
 	time_setting_t rtc = { .seconds = 00, .minutes = 40, .hours = 18, .weekday =
-				4, .date = 24, .month = 1, .year = 19 };
+			4, .date = 24, .month = 1, .year = 19 };
 
 	MX_GPIO_init();
 	MX_Usart_init();
@@ -72,7 +73,7 @@ int main(void) {
 	tempsens_on();
 	rtc_init();
 	light_sensor_init();
-	rtc_set(&rtc);
+	set_time(&rtc);
 	HAL_TIM_Base_Start(&HH10D_PWM);
 	light_sensor_init();
 	get_constant_datas(&rh_sensor);
@@ -81,7 +82,14 @@ int main(void) {
 	while (1) {
 
 	}
+}
 
+PUTCHAR_PROTOTYPE {
+	/* Place your implementation of fputc here */
+	/* e.g. write a character to the EVAL_COM1 and Loop until the end of transmission */
+	HAL_UART_Transmit(&huart6, (uint8_t *) &ch, 1, 0xFFFF);
+
+	return ch;
 }
 
 void TIM3_IRQHandler() {
@@ -101,24 +109,34 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		HAL_TIM_Base_Stop_IT(&DATE_AND_TIME);
 		char temp_data[2];
 		char rh_data[2];
-		clear_display();
+		if (display == CLEAR) {
+			clear_display();
+			display = STOP;
+		}
 		get_freq(&rh_sensor);
 		get_humidity(&rh_sensor);
+		send_string("HUMIDITY ");
 		sprintf(rh_data, "%d", rh_sensor.RH);
 		send_string(rh_data);
 		send_string("% RH");
 		new_line();
-		get_temp();
-		sprintf(temp_data, "%d", temp);
+		get_temperature();
+		if (saved_temperature != temperature_value) {
+			display = CLEAR;
+		}
+		send_string("TEMPERATURE ");
+		sprintf(temp_data, "%d", temperature_value);
 		send_string(temp_data);
-		send_string(" CELSIUS");
+		send_string(" C");
 		new_line();
-
+		get_lux_value();
+		saved_temperature = temperature_value;
 
 		if (get_lux_value() == DAY) {
 
 			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
 		} else {
+
 			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
 		}
 
@@ -129,17 +147,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		char time[9];
 		char date[11];
 		clear_display();
-		rtc_get(&rtc_real);
-		create_time_string(&rtc_real, time);
+		get_time(&current_time);
+		create_time_string(&current_time, time);
 		send_string(time);
 		new_line();
-		create_date_string(&rtc_real, date);
+		create_date_string(&current_time, date);
 		send_string(date);
+		get_lux_value();
 
 		if (get_lux_value() == DAY) {
 
 			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_SET);
 		} else {
+
 			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6, GPIO_PIN_RESET);
 		}
 
@@ -147,31 +167,38 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 }
 
 void USART6_IRQHandler() {
+
 	HAL_UART_IRQHandler(&huart6);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+
 	if (huart->Instance == USART6) {
 		if (rx_index == 0) {
-			memset(buffer, '\0', 1);
+
+			memset(bluetooth_buffer, '\0', 1);
 		}
 		if (text != '\n') {
-			buffer[rx_index++] = text;
+
+			bluetooth_buffer[rx_index++] = text;
 		} else {
-			if (strncmp(buffer, "onnnn", 5) == 0) {
+
+			if (strncmp(bluetooth_buffer, "onnnn", 5) == 0) {
+
 				clear_display();
 				send_string("  C-FIGHTERS");
 				new_line();
 				send_string("HACKATHON 2019");
-			} else if (strncmp(buffer, "clock", 5) == 0) {
+
+			} else if (strncmp(bluetooth_buffer, "clock", 5) == 0) {
 				HAL_TIM_Base_Start_IT(&DATE_AND_TIME);
-			} else if (strncmp(buffer, "temps", 5) == 0) {
+			} else if (strncmp(bluetooth_buffer, "temps", 5) == 0) {
 				HAL_TIM_Base_Start_IT(&TEMP_AND_RH);
 
 			}
-
 			rx_index = 0;
-			HAL_UART_Transmit(&huart6, buffer, sizeof(buffer), 100);
+			HAL_UART_Transmit(&huart6, bluetooth_buffer,
+					sizeof(bluetooth_buffer), 100);
 		}
 		HAL_UART_Receive_IT(&huart6, &text, 1);
 	}

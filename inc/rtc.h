@@ -42,8 +42,8 @@ typedef struct {
 } time_setting_t;
 
 void rtc_init(void);
-void rtc_set(time_setting_t *time_struct);
-void rtc_get(times_t *time_struct);
+void set_time(time_setting_t *time_struct);
+void get_time(times_t *time_struct);
 void create_time_string(times_t *time_struct, char* time);
 void create_date_string(times_t *time_struct, char* date);
 

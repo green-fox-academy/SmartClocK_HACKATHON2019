@@ -31,20 +31,11 @@ void get_freq(hh10d_data_t* inputStructure) {
 
 	HH10D_PWM.Instance->CNT = 0;
 	while ((HH10D_PWM.Instance->CNT) < 1000) {
-		if (!(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15))) {
+		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)) {
 
 			inputStructure->increment_freq++;
 		}
-		else if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)) {
-
-
-		}
-
-
 	}
 	inputStructure->frequency = inputStructure->increment_freq;
 	inputStructure->increment_freq = 0;
-
-
-
 }

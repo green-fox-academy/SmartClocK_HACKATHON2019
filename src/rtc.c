@@ -3,22 +3,22 @@
 
 void rtc_init(void) {
 
-	uint8_t settings;
+	uint8_t rtc_settings;
 
 	HAL_I2C_Mem_Read(&hi2c1, RTC_ADDRESS_WRITE_MODE, SECONDS_REGISTER,
-	I2C_ADDRESSINGMODE_7BIT, &settings, 1, 100);
-	settings &= (~(1 << CH));
+	I2C_ADDRESSINGMODE_7BIT, &rtc_settings, 1, 100);
+	rtc_settings &= (~(1 << CH));
 	HAL_I2C_Mem_Write(&hi2c1, RTC_ADDRESS_WRITE_MODE, SECONDS_REGISTER,
-	I2C_ADDRESSINGMODE_7BIT, &settings, 1, 100);
+	I2C_ADDRESSINGMODE_7BIT, &rtc_settings, 1, 100);
 	HAL_I2C_Mem_Read(&hi2c1, RTC_ADDRESS_WRITE_MODE, HOURS_REGISTER,
-	I2C_ADDRESSINGMODE_7BIT, &settings, 1, 100);
-	settings |= (0b01000000);
+	I2C_ADDRESSINGMODE_7BIT, &rtc_settings, 1, 100);
+	rtc_settings |= (0b01000000);
 	HAL_I2C_Mem_Write(&hi2c1, RTC_ADDRESS_WRITE_MODE, HOURS_REGISTER,
-	I2C_ADDRESSINGMODE_7BIT, &settings, 1, 100);
+	I2C_ADDRESSINGMODE_7BIT, &rtc_settings, 1, 100);
 
 }
 
-void rtc_set(time_setting_t *time_struct) {
+void set_time(time_setting_t *time_struct) {
 
 	uint8_t sec, min, hour, weekday, date, month, year;
 
@@ -47,7 +47,7 @@ void rtc_set(time_setting_t *time_struct) {
 
 }
 
-void rtc_get(times_t *time_struct) {
+void get_time(times_t *time_struct) {
 
 	HAL_I2C_Mem_Read(&hi2c1, RTC_ADDRESS_READ_MODE, SECONDS_REGISTER,
 	I2C_ADDRESSINGMODE_7BIT, &time_struct->seconds, 1, 100);
