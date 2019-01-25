@@ -25,27 +25,19 @@ for controlling the features.
 ## Hardware
 
 1. [STM32F746G-DISCOVERY board](https://www.st.com/content/ccc/resource/technical/document/datasheet/96/ed/61/9b/e0/6c/45/0b/DM00166116.pdf/files/DM00166116.pdf/jcr:content/translations/en.DM00166116.pdf)
-2. [LCD1602A]
-(https://www.openhacks.com/uploadsproductos/eone-1602a1.pdf)
-3. [LM75A]
-(https://www.nxp.com/docs/en/data-sheet/LM75A.pdf)
-4. [BH1750]
-(https://www.nxp.com/docs/en/data-sheet/LM75A.pdf)
-5. [DS1307]
-(https://datasheets.maximintegrated.com/en/ds/DS1307.pdf)
-6. [HH10D]
-(https://www.sparkfun.com/datasheets/Sensors/Temperature/HH10D.pdf)
-7. [RN42]
-(http://ww1.microchip.com/downloads/en/devicedoc/rn-42-ds-v2.32r.pdf)
+2. [LCD1602A](https://www.openhacks.com/uploadsproductos/eone-1602a1.pdf)
+3. [LM75A](https://www.nxp.com/docs/en/data-sheet/LM75A.pdf)
+4. [BH1750](https://www.nxp.com/docs/en/data-sheet/LM75A.pdf)
+5. [DS1307](https://datasheets.maximintegrated.com/en/ds/DS1307.pdf)
+6. [HH10D](https://www.sparkfun.com/datasheets/Sensors/Temperature/HH10D.pdf)
+7. [RN42](http://ww1.microchip.com/downloads/en/devicedoc/rn-42-ds-v2.32r.pdf)
 
 
 ## TEAM
 
-- NOSZKA ANDRAS
-(https://github.com/nandras88)
+- [NOSZKA ANDRAS](https://github.com/nandras88)
 
-- HORVATH BALAZS
-(https://github.com/stadd)
+- [HORVATH BALAZS](https://github.com/stadd)
 
 
 
