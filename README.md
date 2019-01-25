@@ -2,7 +2,7 @@
 
 C-Fighters team @ SmartClocK
 
-We developed a SmartClocK witch can measure the temperature, humidity and bluetooth connection is available 
+We developed a SmartClocK which can measure the temperature, humidity and bluetooth connection is available 
 for controlling the features.
 
 ## Main Features
